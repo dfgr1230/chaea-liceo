@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHAEA Nube Pro - Liceo Antonia Santos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        body { background-color: #0f172a; }
+    </style>
+</head>
+<body class="text-slate-100 font-sans p-4 lg:p-8">
+
+    <div class="max-w-7xl mx-auto flex flex-col min-h-screen">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center border-b border-slate-700 pb-6">
+            <div>
+                <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Diagnóstico CHAEA</h1>
+                <p class="text-slate-400 mt-1">Liceo Nacional Antonia Santos | Prof. Dani</p>
+            </div>
+            <div class="bg-slate-800 p-2 rounded-lg border border-slate-700">
+                <select id="gradeSelect" class="bg-transparent text-lg font-bold text-white outline-none">
+                    <option value="601" class="bg-slate-800">Grado 601</option>
+                    <option value="602" class="bg-slate-800">Grado 602</option>
+                    <option value="1001" class="bg-slate-800">Grado 1001</option>
+                    <option value="1101" class="bg-slate-800">Grado 1101</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[650px]">
+            <div class="lg:col-span-3 h-full bg-slate-800 rounded-xl p-4 border border-slate-700 flex flex-col">
+                <div class="mb-4 flex justify-between items-center">
+                    <h2 class="font-semibold flex items-center gap-2"><i data-lucide="users"></i> Estudiantes</h2>
+                    <button onclick="toggleAdd()" class="p-1.5 rounded-md bg-blue-500/20 text-blue-400"><i data-lucide="plus"></i></button>
+                </div>
+                <div id="addArea" class="hidden mb-3 p-2 bg-slate-700/50 rounded-lg border border-slate-600">
+                    <input id="newName" type="text" placeholder="NOMBRE COMPLETO" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 text-sm mb-2 uppercase outline-none">
+                    <button onclick="addStudent()" class="w-full bg-blue-600 py-1 rounded text-xs font-bold">AGREGAR</button>
+                </div>
+                <div id="studentList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
+            </div>
+
+            <div class="lg:col-span-6 h-full bg-slate-800 rounded-xl p-6 border border-slate-700 relative flex flex-col">
+                <div class="flex justify-center mb-4 gap-2">
+                    <button id="tabSt" onclick="setView('student')" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-600">Individual</button>
+                    <button id="tabCr" onclick="setView('course')" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-700">Curso</button>
+                </div>
+                <div class="text-center mb-4">
+                    <h2 id="displayName" class="text-2xl font-bold text-white uppercase italic">Seleccione Alumno</h2>
+                </div>
+                <div class="flex-1 relative min-h-0">
+                    <canvas id="radarChart"></canvas>
+                </div>
+                <div id="pdfAction" class="mt-4 flex justify-center hidden">
+                    <button onclick="downloadPDF()" class="bg-amber-600 hover:bg-amber-500 text-white px-6 py-2 rounded-full font-bold flex items-center gap-2 shadow-lg">
+                        <i data-lucide="file-text"></i> DESCARGAR INFORME PDF
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 h-full bg-slate-800 rounded-xl p-6 border border-slate-700 flex flex-col">
+                <h3 class="font-bold mb-6">Puntajes CHAEA</h3>
+                <div id="inputsArea" class="space-y-6 flex-1"></div>
+                <button onclick="pushToCloud()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold shadow-lg shadow-blue-900/40">
+                    <i data-lucide="save"></i> GUARDAR EN NUBE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBii6skAhk-asLqQ7zXekSTrNCDJrUf_vU",
+            authDomain: "estilo-chaea.firebaseapp.com",
+            projectId: "estilo-chaea",
+            storageBucket: "estilo-chaea.firebasestorage.app",
+            messagingSenderId: "707974540772",
+            appId: "1:707974540772:web:e9fad16db6b892466debf1",
+            measurementId: "G-XC8QBV0JR8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db; window.doc = doc; window.setDoc = setDoc; window.onSnapshot = onSnapshot;
+        initApp();
+    </script>
+
+    <script>
+        let studentsData = {"601":[], "602":[], "1001":[], "1101":[]};
+        let currentGrade = "601";
+        let activeId = null;
+        let myChart = null;
+        let viewMode = 'student';
+
+        const config = {
+            activo: { label: "Activo", color: "#ef4444", desc: "Aprendes mejor con desafíos nuevos y equipos." },
+            reflexivo: { label: "Reflexivo", color: "#3b82f6", desc: "Aprendes observando y analizando antes de actuar." },
+            teorico: { label: "Teórico", color: "#8b5cf6", desc: "Aprendes con modelos lógicos y teorías." },
+            pragmatico: { label: "Pragmático", color: "#10b981", desc: "Aprendes aplicando lo visto a la realidad." }
+        };
+
+        function initApp() {
+            lucide.createIcons();
+            renderInputs();
+            const docRef = window.doc(window.db, "colegio", "grados");
+            window.onSnapshot(docRef, (snap) => {
+                if (snap.exists()) {
+                    studentsData = snap.data().grados;
+                    renderList();
+                    updateChart();
+                }
+            });
+        }
+
+        function renderInputs() {
+            const area = document.getElementById('inputsArea');
+            area.innerHTML = '';
+            Object.keys(config).forEach(key => {
+                area.innerHTML += `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold uppercase">
+                            <label style="color:${config[key].color}">${config[key].label}</label>
+                            <span id="val-${key}">0</span>
+                        </div>
+                        <input type="range" min="0" max="20" value="0" id="range-${key}" oninput="changeScore('${key}', this.value)" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                    </div>`;
+            });
+        }
+
+        function changeScore(key, val) {
+            document.getElementById(`val-${key}`).innerText = val;
+            if (activeId && viewMode === 'student') {
+                studentsData[currentGrade].find(s => s.id === activeId).scores[key] = parseInt(val);
+                updateChart();
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('studentList');
+            list.innerHTML = '';
+            (studentsData[currentGrade] || []).sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
+                const active = s.id === activeId ? 'bg-blue-600 border-blue-400' : 'bg-slate-900/40 border-slate-700';
+                list.innerHTML += `<div onclick="selectStudent('${s.id}')" class="p-2 rounded border cursor-pointer ${active} text-sm mb-1">${s.name}</div>`;
+            });
+        }
+
+        function selectStudent(id) {
+            activeId = id; viewMode = 'student';
+            const st = studentsData[currentGrade].find(s => s.id === id);
+            document.getElementById('displayName').innerText = st.name;
+            document.getElementById('pdfAction').classList.remove('hidden');
+            Object.keys(config).forEach(k => {
+                const val = st.scores[k] || 0;
+                document.getElementById(`range-${k}`).value = val;
+                document.getElementById(`val-${k}`).innerText = val;
+            });
+            updateTabs(); renderList(); updateChart();
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            const st = studentsData[currentGrade].find(s => s.id === activeId);
+            const courseData = Object.keys(config).map(k => {
+                const list = studentsData[currentGrade];
+                return list.length ? (list.reduce((acc, s) => acc + (s.scores[k]||0), 0) / list.length).toFixed(1) : 0;
+            });
+
+            if (myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Activo', 'Reflexivo', 'Teórico', 'Pragmático'],
+                    datasets: [
+                        { label: 'Estudiante', data: st ? Object.keys(config).map(k => st.scores[k]) : [0,0,0,0], borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.3)', borderWidth: 3 },
+                        { label: 'Curso', data: courseData, borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'transparent', borderDash: [5,5] }
+                    ]
+                },
+                options: { scales: { r: { min: 0, max: 20, grid: { color: '#334155' }, angleLines: { color: '#334155' }, ticks: { display: false } } }, plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        async function pushToCloud() {
+            await window.setDoc(window.doc(window.db, "colegio", "grados"), { grados: studentsData });
+            alert("Sincronizado con Firebase!");
+        }
+
+        async function downloadPDF() {
+            const st = studentsData[currentGrade].find(s => s.id === activeId);
+            const scores = st.scores;
+            const dom = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+            
+            const el = document.createElement('div');
+            el.innerHTML = `
+                <div style="padding:40px; font-family:sans-serif; color:#334155;">
+                    <h1 style="color:#2563eb; margin-bottom:0;">Informe de Aprendizaje CHAEA</h1>
+                    <p style="margin-top:5px;">Liceo Nacional Antonia Santos | Estudiante: ${st.name}</p>
+                    <hr>
+                    <div style="text-align:center; margin:20px 0;">
+                        <img src="${myChart.toBase64Image()}" style="width:100%; max-width:400px;">
+                    </div>
+                    <div style="background:#f1f5f9; padding:20px; border-radius:10px; border-left:5px solid #3b82f6;">
+                        <h3 style="margin-top:0; color:#1e3a8a;">Tu Estilo Predominante: ${dom.toUpperCase()}</h3>
+                        <p>${config[dom].desc}</p>
+                    </div>
+                </div>`;
+            html2pdf().from(el).set({ filename: `CHAEA_${st.name}.pdf`, margin: 0.5 }).save();
+        }
+
+        function setView(m) { 
+            viewMode = m; 
+            if(m === 'course') document.getElementById('displayName').innerText = `Promedio Grado ${currentGrade}`;
+            else if(activeId) selectStudent(activeId);
+            updateTabs(); updateChart(); 
+        }
+        function updateTabs() {
+            document.getElementById('tabSt').className = `px-3 py-1 rounded-full text-xs font-bold ${viewMode==='student'?'bg-blue-600':'bg-slate-700'}`;
+            document.getElementById('tabCr').className = `px-3 py-1 rounded-full text-xs font-bold ${viewMode==='course'?'bg-blue-600':'bg-slate-700'}`;
+        }
+        function toggleAdd() { document.getElementById('addArea').classList.toggle('hidden'); }
+        function addStudent() {
+            const name = document.getElementById('newName').value.trim().toUpperCase();
+            if(!name) return;
+            const id = 'id-'+Date.now();
+            studentsData[currentGrade].push({ id, name, scores: {activo:0, reflexivo:0, teorico:0, pragmatico:0} });
+            document.getElementById('newName').value = ''; toggleAdd(); selectStudent(id); pushToCloud();
+        }
+        document.getElementById('gradeSelect').onchange = (e) => { currentGrade = e.target.value; activeId = null; setView('student'); renderList(); };
+    </script>
+</body>
+</html>
