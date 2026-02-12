@@ -10,7 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         body { background-color: #0f172a; }
     </style>
@@ -23,8 +22,8 @@
                 <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Diagnóstico CHAEA</h1>
                 <p class="text-slate-400 mt-1">Liceo Nacional Antonia Santos | Prof. Danny</p>
             </div>
-            <div class="mt-4 md:mt-0 bg-slate-800 p-2 rounded-lg border border-slate-700">
-                <label class="text-xs text-slate-500 uppercase font-semibold block mb-1">Grado</label>
+            <div class="mt-4 md:mt-0 bg-slate-800 p-2 rounded-lg border border-slate-700 text-center">
+                <label class="text-[10px] text-slate-500 uppercase font-bold block mb-1">Grado</label>
                 <select id="gradeSelect" class="bg-transparent text-lg font-bold text-white outline-none cursor-pointer">
                     <option value="601" class="bg-slate-800">Grado 601</option>
                     <option value="602" class="bg-slate-800">Grado 602</option>
@@ -37,24 +36,24 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[650px]">
             <div class="lg:col-span-3 h-full bg-slate-800 rounded-xl p-4 border border-slate-700 shadow-lg flex flex-col">
                 <div class="mb-4 flex justify-between items-center">
-                    <h2 class="font-semibold flex items-center gap-2"><i data-lucide="users" class="text-blue-400 w-5 h-5"></i> Estudiantes</h2>
+                    <h2 class="font-semibold flex items-center gap-2 text-sm"><i data-lucide="users" class="text-blue-400 w-4 h-4"></i> Estudiantes</h2>
                     <div class="flex gap-2">
-                        <button onclick="document.getElementById('fileInput').click()" class="p-1.5 rounded-md bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" title="Importar CSV"><i data-lucide="layers" class="w-5 h-5"></i></button>
-                        <button onclick="toggleAdd()" class="p-1.5 rounded-md bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                        <button onclick="document.getElementById('fileInput').click()" class="p-1.5 rounded bg-emerald-500/10 text-emerald-400" title="Importar CSV"><i data-lucide="layers" class="w-4 h-4"></i></button>
+                        <button onclick="toggleAdd()" class="p-1.5 rounded bg-blue-500/10 text-blue-400"><i data-lucide="plus" class="w-4 h-4"></i></button>
                     </div>
                 </div>
                 <input type="file" id="fileInput" class="hidden" accept=".csv" onchange="handleCSV(this)">
                 <div id="addArea" class="hidden mb-3 p-2 bg-slate-700/50 rounded-lg border border-slate-600">
-                    <input id="newName" type="text" placeholder="NOMBRE COMPLETO" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 text-sm mb-2 outline-none uppercase text-white">
-                    <button onclick="addStudent()" class="w-full bg-blue-600 py-1 rounded text-xs font-bold">AGREGAR</button>
+                    <input id="newName" type="text" placeholder="NOMBRE COMPLETO" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs mb-2 outline-none uppercase text-white">
+                    <button onclick="addStudent()" class="w-full bg-blue-600 py-1 rounded text-[10px] font-bold uppercase">Agregar</button>
                 </div>
-                <div id="studentList" class="flex-1 overflow-y-auto custom-scrollbar space-y-2"></div>
+                <div id="studentList" class="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-1"></div>
             </div>
 
             <div class="lg:col-span-6 h-full bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-xl relative flex flex-col">
-                <div class="flex justify-center mb-4 gap-2">
-                    <button id="tabSt" onclick="setView('student')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-blue-600">Individual</button>
-                    <button id="tabCr" onclick="setView('course')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-700 text-slate-400">Promedio Curso</button>
+                <div class="flex justify-center mb-6 gap-2">
+                    <button id="tabSt" onclick="setView('student')" class="px-4 py-1.5 rounded-full text-[10px] font-bold bg-blue-600">Individual</button>
+                    <button id="tabCr" onclick="setView('course')" class="px-4 py-1.5 rounded-full text-[10px] font-bold bg-slate-700 text-slate-400">Promedio Curso</button>
                 </div>
                 <div class="text-center mb-4">
                     <h2 id="displayName" class="text-2xl font-bold text-white uppercase italic">Seleccione Alumno</h2>
@@ -63,17 +62,17 @@
                     <canvas id="radarChart"></canvas>
                 </div>
                 <div id="pdfAction" class="mt-4 flex justify-center hidden">
-                    <button onclick="downloadPDF()" class="bg-amber-600 hover:bg-amber-500 text-white px-6 py-2 rounded-full font-bold flex items-center gap-2 shadow-lg">
+                    <button onclick="downloadPDF()" class="bg-amber-600 hover:bg-amber-500 text-white px-6 py-2 rounded-full font-bold text-xs flex items-center gap-2 shadow-lg">
                         <i data-lucide="file-text"></i> DESCARGAR INFORME PDF
                     </button>
                 </div>
             </div>
 
             <div class="lg:col-span-3 h-full bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-lg flex flex-col">
-                <h3 class="font-bold mb-6 flex items-center gap-2"><i data-lucide="bar-chart-2" class="text-purple-400"></i> Puntajes (0-20)</h3>
-                <div id="inputsArea" class="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2"></div>
-                <button id="saveBtn" onclick="pushToCloud()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-lg">
-                    <i data-lucide="save"></i> GUARDAR EN NUBE
+                <h3 class="font-bold mb-6 flex items-center gap-2 text-sm text-slate-300"><i data-lucide="bar-chart-2" class="text-purple-400 w-4 h-4"></i> Puntajes (0-20)</h3>
+                <div id="inputsArea" class="space-y-6 flex-1 pr-1"></div>
+                <button id="saveBtn" onclick="pushToCloud()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow-lg">
+                    <i data-lucide="save" class="w-4 h-4"></i> GUARDAR EN NUBE
                 </button>
             </div>
         </div>
@@ -107,10 +106,10 @@
         let myChart = null;
 
         const config = {
-            activo: { label: "Activo", color: "#ef4444", desc: "Aprendes mejor con desafíos cortos y actividades dinámicas." },
-            reflexivo: { label: "Reflexivo", color: "#3b82f6", desc: "Aprendes mejor observando y analizando antes de actuar." },
-            teorico: { label: "Teórico", color: "#8b5cf6", desc: "Aprendes mejor con modelos, teorías y lógica estructurada." },
-            pragmatico: { label: "Pragmático", color: "#10b981", desc: "Aprendes mejor aplicando lo visto a problemas reales." }
+            activo: { label: "Activo", color: "#ef4444", desc: "Aprendes con desafíos nuevos." },
+            reflexivo: { label: "Reflexivo", color: "#3b82f6", desc: "Aprendes observando y pensando." },
+            teorico: { label: "Teórico", color: "#8b5cf6", desc: "Aprendes con modelos lógicos." },
+            pragmatico: { label: "Pragmático", color: "#10b981", desc: "Aprendes aplicando lo real." }
         };
 
         function initApp() {
@@ -132,7 +131,7 @@
             Object.keys(config).forEach(key => {
                 area.innerHTML += `
                     <div class="space-y-1">
-                        <div class="flex justify-between text-xs font-bold uppercase">
+                        <div class="flex justify-between text-[10px] font-bold uppercase">
                             <label style="color:${config[key].color}">${config[key].label}</label>
                             <span id="val-${key}">0</span>
                         </div>
@@ -144,8 +143,7 @@
         function changeScore(key, val) {
             document.getElementById(`val-${key}`).innerText = val;
             if (activeId && viewMode === 'student') {
-                const st = studentsData[currentGrade].find(s => s.id === activeId);
-                if (st) st.scores[key] = parseInt(val);
+                studentsData[currentGrade].find(s => s.id === activeId).scores[key] = parseInt(val);
                 updateChart();
             }
         }
@@ -154,12 +152,8 @@
             const list = document.getElementById('studentList');
             list.innerHTML = '';
             (studentsData[currentGrade] || []).sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
-                const active = s.id === activeId ? 'bg-blue-600 border-blue-400' : 'bg-slate-900/40 border-slate-700';
-                list.innerHTML += `
-                <div onclick="selectStudent('${s.id}')" class="p-2 rounded border cursor-pointer ${active} text-sm flex justify-between group">
-                    <span class="truncate">${s.name}</span>
-                    <button onclick="deleteStudent(event, '${s.id}')" class="opacity-0 group-hover:opacity-100 text-red-400">×</button>
-                </div>`;
+                const active = s.id === activeId ? 'bg-blue-600' : 'bg-slate-900/40';
+                list.innerHTML += `<div onclick="selectStudent('${s.id}')" class="p-2 rounded border border-slate-700 cursor-pointer ${active} text-xs truncate">${s.name}</div>`;
             });
         }
 
@@ -169,17 +163,17 @@
             document.getElementById('displayName').innerText = st.name;
             document.getElementById('pdfAction').classList.remove('hidden');
             Object.keys(config).forEach(k => {
-                const val = st.scores[k] || 0;
-                document.getElementById(`range-${k}`).value = val;
-                document.getElementById(`val-${k}`).innerText = val;
+                const v = st.scores[k] || 0;
+                document.getElementById(`range-${k}`).value = v;
+                document.getElementById(`val-${k}`).innerText = v;
             });
-            renderList(); updateChart(); updateTabs();
+            renderList(); updateChart();
         }
 
         function updateChart() {
             const ctx = document.getElementById('radarChart').getContext('2d');
             const st = studentsData[currentGrade].find(s => s.id === activeId);
-            const courseData = Object.keys(config).map(k => {
+            const avg = Object.keys(config).map(k => {
                 const list = studentsData[currentGrade];
                 return list.length ? (list.reduce((acc, s) => acc + (s.scores[k]||0), 0) / list.length).toFixed(1) : 0;
             });
@@ -191,7 +185,7 @@
                     labels: ['Activo', 'Reflexivo', 'Teórico', 'Pragmático'],
                     datasets: [
                         { label: 'Estudiante', data: st ? Object.keys(config).map(k => st.scores[k]) : [0,0,0,0], borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.3)', borderWidth: 3 },
-                        { label: 'Promedio Curso', data: courseData, borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'transparent', borderDash: [5,5] }
+                        { label: 'Promedio Curso', data: avg, borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'transparent', borderDash: [5,5] }
                     ]
                 },
                 options: { scales: { r: { min: 0, max: 20, grid: { color: '#334155' }, angleLines: { color: '#334155' }, ticks: { display: false } } }, plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
@@ -200,26 +194,20 @@
 
         async function pushToCloud() {
             await window.setDoc(window.doc(window.db, "colegio", "grados"), { grados: studentsData });
-            alert("¡Datos guardados con éxito!");
+            alert("¡Sincronizado!");
         }
 
         async function downloadPDF() {
             const st = studentsData[currentGrade].find(s => s.id === activeId);
-            const scores = st.scores;
-            const dom = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+            const dom = Object.keys(st.scores).reduce((a, b) => st.scores[a] > st.scores[b] ? a : b);
             const el = document.createElement('div');
-            el.innerHTML = `
-                <div style="padding:40px; font-family:sans-serif; color:#1e293b;">
-                    <h1 style="color:#2563eb; margin-bottom:0;">Informe de Estilo de Aprendizaje (CHAEA)</h1>
-                    <p>Liceo Nacional Antonia Santos | Prof. Danny</p>
-                    <hr style="margin:20px 0;">
-                    <p><strong>Estudiante:</strong> ${st.name} | <strong>Grado:</strong> ${currentGrade}</p>
-                    <div style="text-align:center; margin:30px 0;"><img src="${myChart.toBase64Image()}" style="width:100%; max-width:400px;"></div>
-                    <div style="background:#f1f5f9; padding:20px; border-left:5px solid #3b82f6; border-radius:8px;">
-                        <h3 style="margin-top:0; color:#1e40af;">Tu Estilo Dominante: ${dom.toUpperCase()}</h3>
-                        <p>${config[dom].desc}</p>
-                    </div>
-                </div>`;
+            el.innerHTML = `<div style="padding:40px; font-family:sans-serif;">
+                <h1>Informe CHAEA - ${st.name}</h1>
+                <p>Grado: ${currentGrade} | Prof. Danny</p>
+                <img src="${myChart.toBase64Image()}" style="width:100%; margin:20px 0;">
+                <p><strong>Estilo Dominante: ${dom.toUpperCase()}</strong></p>
+                <p>${config[dom].desc}</p>
+            </div>`;
             html2pdf().from(el).set({ filename: `CHAEA_${st.name}.pdf` }).save();
         }
 
@@ -229,9 +217,7 @@
                 const lines = e.target.result.split('\n');
                 lines.forEach(line => {
                     const name = line.split(/[;,]/).pop().trim().toUpperCase();
-                    if (name && name !== "NOMBRE") {
-                        studentsData[currentGrade].push({ id: 'id-'+Date.now()+Math.random(), name, scores: {activo:0, reflexivo:0, teorico:0, pragmatico:0} });
-                    }
+                    if (name && name !== "NOMBRE") studentsData[currentGrade].push({ id: 'id-'+Date.now()+Math.random(), name, scores: {activo:0, reflexivo:0, teorico:0, pragmatico:0} });
                 });
                 renderList(); pushToCloud();
             };
@@ -245,20 +231,9 @@
             studentsData[currentGrade].push({ id, name, scores: {activo:0, reflexivo:0, teorico:0, pragmatico:0} });
             document.getElementById('newName').value = ''; toggleAdd(); selectStudent(id); pushToCloud();
         }
-
-        function deleteStudent(e, id) { e.stopPropagation(); if(confirm('¿Eliminar estudiante?')) { studentsData[currentGrade] = studentsData[currentGrade].filter(s => s.id !== id); renderList(); pushToCloud(); } }
-        function setView(m) { 
-            viewMode = m; 
-            if(m === 'course') document.getElementById('displayName').innerText = `PROMEDIO GRADO ${currentGrade}`;
-            else if(activeId) selectStudent(activeId);
-            updateChart(); updateTabs();
-        }
-        function updateTabs() {
-            document.getElementById('tabSt').className = `px-4 py-1.5 rounded-full text-xs font-bold ${viewMode==='student'?'bg-blue-600':'bg-slate-700 text-slate-400'}`;
-            document.getElementById('tabCr').className = `px-4 py-1.5 rounded-full text-xs font-bold ${viewMode==='course'?'bg-blue-600':'bg-slate-700 text-slate-400'}`;
-        }
         function toggleAdd() { document.getElementById('addArea').classList.toggle('hidden'); }
-        document.getElementById('gradeSelect').onchange = (e) => { currentGrade = e.target.value; activeId = null; setView('student'); renderList(); };
+        function setView(m) { viewMode = m; updateChart(); }
+        document.getElementById('gradeSelect').onchange = (e) => { currentGrade = e.target.value; activeId = null; renderList(); updateChart(); };
     </script>
 </body>
 </html>
