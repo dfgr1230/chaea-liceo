@@ -211,18 +211,42 @@
             html2pdf().from(el).set({ filename: `CHAEA_${st.name}.pdf` }).save();
         }
 
-        function handleCSV(input) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const lines = e.target.result.split('\n');
-                lines.forEach(line => {
-                    const name = line.split(/[;,]/).pop().trim().toUpperCase();
-                    if (name && name !== "NOMBRE") studentsData[currentGrade].push({ id: 'id-'+Date.now()+Math.random(), name, scores: {activo:0, reflexivo:0, teorico:0, pragmatico:0} });
+       function handleCSV(input) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const lines = e.target.result.split(/\r?\n/); // Divide por líneas sin importar el formato
+        let count = 0;
+
+        lines.forEach(line => {
+            // Detecta si es coma o punto y coma
+            const delimiter = line.includes(';') ? ';' : ',';
+            const parts = line.split(delimiter);
+            
+            // Toma la última columna (donde suele estar el nombre completo) y limpia espacios
+            let name = parts[parts.length - 1].trim().toUpperCase();
+            
+            // Ignora encabezados y líneas vacías
+            if (name && name !== "NOMBRE" && name.length > 3) {
+                const id = 'id-' + Date.now() + Math.random();
+                studentsData[currentGrade].push({ 
+                    id: id, 
+                    name: name, 
+                    scores: {activo:0, reflexivo:0, teorico:0, pragmatico:0} 
                 });
-                renderList(); pushToCloud();
-            };
-            reader.readAsText(input.files[0]);
+                count++;
+            }
+        });
+        
+        if (count > 0) {
+            renderList(); 
+            pushToCloud();
+            alert(`¡Éxito! Se cargaron ${count} estudiantes al Grado ${currentGrade}`);
+        } else {
+            alert("No se encontraron nombres válidos en el archivo. Revisa que el archivo tenga los nombres en la última columna.");
         }
+    };
+    reader.readAsText(input.files[0]);
+}
 
         function addStudent() {
             const name = document.getElementById('newName').value.trim().toUpperCase();
@@ -237,3 +261,4 @@
     </script>
 </body>
 </html>
+
